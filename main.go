@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"math/rand"
-	"os"
+	"net/http"
 	"regexp"
 	"strings"
 )
@@ -25,8 +27,9 @@ func (c *Corpus) AddTrigram(w1, w2, w3 string) {
 	c.Trigrams.AddEdge(w1+w2, w2+w3)
 }
 
-func (c *Corpus) Ingest(s string) {
-	arr := strings.Split(s, " ")
+// Ingest takes an array of bytes, representing a new body of text to incorperate into the existing corpus
+func (c *Corpus) Ingest(bs []byte) {
+	arr := strings.Split(string(bs), " ")
 	for i := 0; i < len(arr)-3; i++ {
 		c.AddTrigram(arr[i], arr[i+1], arr[i+2])
 	}
@@ -141,17 +144,52 @@ func (g *Graph) Print() {
 	fmt.Println(string(jsonBs))
 }
 
-func main() {
-	c := NewCorpus()
-	bs, err := os.ReadFile("pg66366.txt")
-	if err != nil {
-		fmt.Println(err)
+func (s *Server) learnHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "POST":
+		contentType := r.Header.Get("Content-Type")
+		if contentType != "text/plain" {
+			w.WriteHeader(400)
+		}
+
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(500)
+		}
+
+		re := regexp.MustCompile("[^A-Za-z ]*")
+		tidy := re.ReplaceAll(body, []byte(""))
+		s.Corpus.Ingest(tidy)
+	default:
+		w.WriteHeader(404)
 	}
+}
 
-	re := regexp.MustCompile("[^A-Za-z ]*")
-	tidy := re.ReplaceAll(bs, []byte(""))
+func (s *Server) generateHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		sentence := s.Corpus.Generate(100)
+		fmt.Println(sentence)
+	default:
+		w.WriteHeader(404)
+	}
+}
 
-	c.Ingest(string(tidy))
-	sentence := c.Generate(100)
-	fmt.Println(sentence)
+type Server struct {
+	Corpus *Corpus
+}
+
+func NewServer() *Server {
+	return &Server{
+		Corpus: NewCorpus(),
+	}
+}
+
+func main() {
+	s := NewServer()
+	http.Handle("/learn", http.HandlerFunc(s.learnHandler))
+	http.Handle("/generate", http.HandlerFunc(s.generateHandler))
+	log.Fatal(http.ListenAndServe(":8080", nil))
+
 }
