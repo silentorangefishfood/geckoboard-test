@@ -61,44 +61,56 @@ func (c *Corpus) GetRandomKey() (string, error) {
 }
 
 func (s *Server) learnHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "POST":
-		contentType := r.Header.Get("Content-Type")
-		if contentType != "text/plain" {
-			w.WriteHeader(400)
-		}
-
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			fmt.Println(err)
-			w.WriteHeader(500)
-		}
-
-		re := regexp.MustCompile("\n")
-		tidy := re.ReplaceAll(body, []byte(" "))
-		re = regexp.MustCompile("[^A-Za-z .]*")
-		tidy = re.ReplaceAll(tidy, []byte(""))
-		fmt.Println(string(tidy))
-		s.Corpus.Ingest(tidy)
-		s.Corpus.Trigrams.Print()
-	default:
-		w.WriteHeader(404)
+	contentType := r.Header.Get("Content-Type")
+	if contentType != "text/plain" {
+		w.WriteHeader(400)
 	}
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(500)
+	}
+
+	re := regexp.MustCompile("\n")
+	tidy := re.ReplaceAll(body, []byte(" "))
+	re = regexp.MustCompile("[^A-Za-z .]*")
+	tidy = re.ReplaceAll(tidy, []byte(""))
+	fmt.Println(string(tidy))
+	s.Corpus.Ingest(tidy)
+	s.Corpus.Trigrams.Print()
+}
+
+func post(h http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "POST":
+			h.ServeHTTP(w, r)
+		default:
+			w.WriteHeader(404)
+		}
+	})
+}
+
+func get(h http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "GET":
+			h.ServeHTTP(w, r)
+		default:
+			w.WriteHeader(404)
+		}
+	})
 }
 
 func (s *Server) generateHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "GET":
-		sentence, err := s.Corpus.Generate(100)
-		if err != nil {
-			fmt.Println(err)
-			// Must populate corpus before generating
-			w.WriteHeader(400)
-		}
-		fmt.Println(sentence)
-	default:
-		w.WriteHeader(404)
+	sentence, err := s.Corpus.Generate(100)
+	if err != nil {
+		fmt.Println(err)
+		// Must populate corpus before generating
+		w.WriteHeader(400)
 	}
+	fmt.Println(sentence)
 }
 
 type Server struct {
@@ -113,8 +125,8 @@ func NewServer() *Server {
 
 func main() {
 	s := NewServer()
-	http.Handle("/learn", http.HandlerFunc(s.learnHandler))
-	http.Handle("/generate", http.HandlerFunc(s.generateHandler))
+	http.HandleFunc("/learn", post(s.learnHandler))
+	http.HandleFunc("/generate", get(s.generateHandler))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 
 }
