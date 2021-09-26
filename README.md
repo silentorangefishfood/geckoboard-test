@@ -15,3 +15,7 @@ This could have been implemented by creating additional nodes for each duplicate
 - Tests
 - Push learning into a queue, and return from handler immediately with 202
 - Make sure initial learning text is cleaned up correctly, no double spaces etc
+- Godoc all exported functions
+- Add comments to anywhere that needs it
+- How can we test the frequency is accurate?
+- Test it on the whole of project gutenberg, talk about tradeoffs of design
