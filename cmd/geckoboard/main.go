@@ -80,6 +80,7 @@ func (s *Server) learnHandler(w http.ResponseWriter, r *http.Request) {
 		tidy = re.ReplaceAll(tidy, []byte(""))
 		fmt.Println(string(tidy))
 		s.Corpus.Ingest(tidy)
+		s.Corpus.Trigrams.Print()
 	default:
 		w.WriteHeader(404)
 	}

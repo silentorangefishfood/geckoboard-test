@@ -13,11 +13,24 @@ type Graph struct {
 type GraphNode struct {
 	Word1 string
 	Word2 string
+	TotalWeight int
 	Edges []*EdgeNode
 }
 
 func (g *GraphNode) RandomEdge() *EdgeNode {
-	return g.Edges[rand.Intn(len(g.Edges))]
+	stoppingPoint := rand.Intn(g.TotalWeight) + 1
+	fmt.Printf("Stopping point: %d\n", stoppingPoint)
+	count := 0
+	for _, edge := range g.Edges {
+		count += edge.Weight
+		if count >= stoppingPoint {
+			fmt.Printf("Reached stopping point, count: %d\n", count)
+			return edge
+		}
+	}
+
+	// We should never reach here
+	return nil
 }
 
 type EdgeNode struct {
@@ -37,6 +50,7 @@ func NewGraph() *Graph {
 
 // AddNode adds a new node in the graph
 func (g *Graph) AddNode(word1, word2 string) {
+	fmt.Println("Adding Node")
 	index := word1 + word2
 	node := g.Nodes[index]
 	if node == nil {
@@ -51,11 +65,17 @@ func (g *Graph) AddNode(word1, word2 string) {
 
 // AddEdge adds a node to the
 func (g *Graph) AddEdge(n1Index, n2Index string) {
+	fmt.Println("Adding Edge")
 	n1 := g.Nodes[n1Index]
 	if n1 == nil {
 		fmt.Println("Source node must exist")
 		return
 	}
+
+	// Keep track of the total number of edges adjacent to the GraphNode.  We use
+	// this value to randomly pick an edge with the same frequency the edge
+	// occours in the corpus.
+	n1.TotalWeight += 1
 
 	for _, edge := range n1.Edges {
 		// if the edge already exists
@@ -78,6 +98,7 @@ func (g *Graph) AddEdge(n1Index, n2Index string) {
 
 // RandomWalk given a starting index will walk through a graph returning a list of strings it comes across
 func (g *Graph) RandomWalk(start string, count, maxLength int) []string {
+	fmt.Println("RandomWalk")
 	count += 1
 	strs := []string{}
 	startNode := g.Nodes[start]
