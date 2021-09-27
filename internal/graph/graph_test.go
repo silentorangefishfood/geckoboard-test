@@ -10,25 +10,24 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+type TestVal struct {
+	Int int
+}
+
 // TestGraph
 func TestGraph(t *testing.T) {
 	g := NewGraph()
 	t.Run("AddFirstNode", func(t *testing.T) {
-		w1 := "To"
-		w2 := "be"
-		g.AddNode(w1, w2)
-		index := w1 + w2
+		index := "test1"
+		g.AddNode(index, TestVal{ Int: 1 })
 		node := g.Nodes[index]
 		if node == nil {
 			t.Errorf("Expected graph to contain node: %s", index)
 		}
 
-		if node.Word1 != w1 {
-			t.Errorf("Expected graph node to contain word1: %s", w1)
-		}
-
-		if node.Word2 != w2 {
-			t.Errorf("Expected graph node to contain word2: %s", w1)
+		value := node.Value.(TestVal).Int
+		if value != 1 {
+			t.Errorf("Expected node to contain value: %d", value)
 		}
 
 		if node.TotalWeight != 0 {
@@ -37,21 +36,16 @@ func TestGraph(t *testing.T) {
 	})
 
 	t.Run("AddSecondNode", func(t *testing.T) {
-		w1 := "be"
-		w2 := "or"
-		g.AddNode(w1, w2)
-		index := w1 + w2
+		index := "test2"
+		g.AddNode(index, TestVal{ Int: 2 })
 		node := g.Nodes[index]
 		if node == nil {
 			t.Errorf("Expected graph to contain node: %s", index)
 		}
 
-		if node.Word1 != w1 {
-			t.Errorf("Expected graph node to contain word1: %s", w1)
-		}
-
-		if node.Word2 != w2 {
-			t.Errorf("Expected graph node to contain word2: %s", w1)
+		value := node.Value.(TestVal).Int
+		if value != 2 {
+			t.Errorf("Expected node to contain value: %d", value)
 		}
 
 		if node.TotalWeight != 0 {
@@ -60,8 +54,8 @@ func TestGraph(t *testing.T) {
 	})
 
 	t.Run("AddEdge", func(t *testing.T) {
-		i1 := "Tobe"
-		i2 := "beor"
+		i1 := "test1"
+		i2 := "test2"
 		g.AddEdge(i1, i2)
 		srcNode := g.Nodes[i1]
 		if srcNode.TotalWeight != 1 {
@@ -83,21 +77,16 @@ func TestGraph(t *testing.T) {
 	})
 
 	t.Run("AddThirdNode", func(t *testing.T) {
-		w1 := "or"
-		w2 := "not"
-		g.AddNode(w1, w2)
-		index := w1 + w2
+		index := "test3"
+		g.AddNode(index, TestVal{ Int: 3 })
 		node := g.Nodes[index]
 		if node == nil {
 			t.Errorf("Expected graph to contain node: %s", index)
 		}
 
-		if node.Word1 != w1 {
-			t.Errorf("Expected graph node to contain word1: %s", w1)
-		}
-
-		if node.Word2 != w2 {
-			t.Errorf("Expected graph node to contain word2: %s", w1)
+		value := node.Value.(TestVal).Int
+		if value != 3 {
+			t.Errorf("Expected node to contain value: %d", value)
 		}
 
 		if node.TotalWeight != 0 {
