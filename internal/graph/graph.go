@@ -11,8 +11,7 @@ type Graph struct {
 }
 
 type GraphNode struct {
-	Word1 string
-	Word2 string
+	Value interface{}
 	TotalWeight int
 	Edges []*EdgeNode
 }
@@ -38,10 +37,6 @@ type EdgeNode struct {
 	Weight int
 }
 
-func (n *GraphNode) GetIndex() string {
-	return n.Word1 + n.Word2
-}
-
 func NewGraph() *Graph {
 	return &Graph{
 		Nodes: make(map[string]*GraphNode),
@@ -49,14 +44,11 @@ func NewGraph() *Graph {
 }
 
 // AddNode adds a new node in the graph
-func (g *Graph) AddNode(word1, word2 string) {
-	fmt.Println("Adding Node")
-	index := word1 + word2
+func (g *Graph) AddNode(index string, value interface{}) {
 	node := g.Nodes[index]
 	if node == nil {
 		node := &GraphNode{
-			Word1: word1,
-			Word2: word2,
+			Value: value,
 		}
 		g.Nodes[index] = node
 		return
@@ -65,7 +57,6 @@ func (g *Graph) AddNode(word1, word2 string) {
 
 // AddEdge adds a node to the
 func (g *Graph) AddEdge(n1Index, n2Index string) {
-	fmt.Println("Adding Edge")
 	n1 := g.Nodes[n1Index]
 	if n1 == nil {
 		fmt.Println("Source node must exist")
@@ -96,25 +87,21 @@ func (g *Graph) AddEdge(n1Index, n2Index string) {
 	g.Nodes[n1Index].Edges = append(g.Nodes[n1Index].Edges, n2)
 }
 
+type StopCase func(int, *GraphNode) bool
+
 // RandomWalk given a starting index will walk through a graph returning a list of strings it comes across
-func (g *Graph) RandomWalk(start string, count, maxLength int) []string {
-	fmt.Println("RandomWalk")
+func (g *Graph) RandomWalk(startIndex string, fn StopCase) {
+	randomWalk(g, startIndex, 0, fn)
+}
+
+func randomWalk(g *Graph, start string, count int, fn StopCase) {
 	count += 1
-	strs := []string{}
-	startNode := g.Nodes[start]
-	if len(startNode.Edges) == 0 ||
-		(count >= maxLength &&
-			len(startNode.Word2) > 0 &&
-			startNode.Word2[len(startNode.Word2)-1:][0] == '.') {
-		strs = append(strs, startNode.Word2)
-		return strs
+	node := g.Nodes[start]
+	if fn(count, node) {
+		return
 	}
 
-	strs = append(strs, startNode.Word1)
-	randomNext := startNode.RandomEdge()
-	randomNextIndex := randomNext.Index
-	strs = append(strs, g.RandomWalk(randomNextIndex, count, maxLength)...)
-	return strs
+	randomWalk(g, node.RandomEdge().Index, count, fn)
 }
 
 func (g *Graph) Print() {

@@ -7,12 +7,7 @@ import (
 	"regexp"
 )
 
-func (s *Server) LearnHandler(w http.ResponseWriter, r *http.Request) {
-	contentType := r.Header.Get("Content-Type")
-	if contentType != "text/plain" {
-		w.WriteHeader(400)
-	}
-
+func (s *Server) Learn(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println(err)
@@ -28,7 +23,7 @@ func (s *Server) LearnHandler(w http.ResponseWriter, r *http.Request) {
 	s.Corpus.Trigrams.Print()
 }
 
-func (s *Server) GenerateHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) Generate(w http.ResponseWriter, r *http.Request) {
 	sentence, err := s.Corpus.Generate(100)
 	if err != nil {
 		fmt.Println(err)

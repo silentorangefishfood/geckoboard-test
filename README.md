@@ -10,7 +10,6 @@ This could have been implemented by creating additional nodes for each duplicate
 
 ## TODO
 
-- Finish readme
 - Make concurrency safe, probably use mutexes to protect the low level structures
 - Tests
 - Push learning into a queue, and return from handler immediately with 202
@@ -19,3 +18,8 @@ This could have been implemented by creating additional nodes for each duplicate
 - Add comments to anywhere that needs it
 - How can we test the frequency is accurate?
 - Test it on the whole of project gutenberg, talk about tradeoffs of design
+- Make graph more generic by having the 'value' be an interface{}?
+- Finish readme
+- Table based testing?
+- As well as sending us your code, we would like to hear about any design considerations or technical details you gave particular consideration to. If you had to make any particular trade-offs, or if you would have done things differently given more time, then let us know.
+- Golint, go vet, etc...

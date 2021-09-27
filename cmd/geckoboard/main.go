@@ -10,7 +10,7 @@ import (
 
 func main() {
 	s := api.NewServer()
-	http.HandleFunc("/learn", middleware.Post(s.LearnHandler))
-	http.HandleFunc("/generate", middleware.Get(s.GenerateHandler))
+	http.HandleFunc("/learn", middleware.Post(s.Learn))
+	http.HandleFunc("/generate", middleware.Get(s.Generate))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
