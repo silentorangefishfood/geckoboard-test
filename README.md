@@ -21,5 +21,7 @@ This could have been implemented by creating additional nodes for each duplicate
 - Make graph more generic by having the 'value' be an interface{}?
 - Finish readme
 - Table based testing?
+- Refactor graph to use the word 'Frequency' to make it clearer
+- Use sync.Map for the maps? 
 - As well as sending us your code, we would like to hear about any design considerations or technical details you gave particular consideration to. If you had to make any particular trade-offs, or if you would have done things differently given more time, then let us know.
 - Golint, go vet, etc...

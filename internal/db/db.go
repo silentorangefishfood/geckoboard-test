@@ -69,16 +69,20 @@ func (c *Corpus) Generate(maxLength int) ([]string, error) {
 }
 
 func (c *Corpus) GetRandomKey() (string, error) {
-	if len(c.Trigrams.Nodes) == 0 {
+	if c.Trigrams.Size() == 0 {
 		return "", errors.New("Empty corpus")
 	}
 	arr := []string{}
-	for k, n := range c.Trigrams.Nodes {
-		bigram := n.Value.(Bigram)
+	c.Trigrams.Nodes.Range(func(key, value interface{}) bool {
+		graphNode := value.(*graph.GraphNode)
+		index := key.(string)
+		bigram := graphNode.Value.(Bigram)
 		if len(bigram.Word1) > 0 && unicode.IsUpper(rune(bigram.Word1[0])) {
-			arr = append(arr, k)
+			arr = append(arr, index)
 		}
-	}
+
+		return true
+	})
 
 	return arr[rand.Intn(len(arr))], nil
 }

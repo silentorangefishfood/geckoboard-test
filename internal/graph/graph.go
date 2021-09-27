@@ -4,16 +4,80 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"sync"
 )
 
 type Graph struct {
-	Nodes map[string]*GraphNode
+	Nodes sync.Map
 }
 
 type GraphNode struct {
-	Value interface{}
+	Value       interface{}
 	TotalWeight int
-	Edges []*EdgeNode
+	Edges       []*EdgeNode
+}
+
+type EdgeNode struct {
+	Index  string
+	Weight int
+}
+
+func NewGraph() *Graph {
+	return &Graph{
+		Nodes: sync.Map{},
+	}
+}
+
+func (g *Graph) Size() int {
+	length := 0
+	g.Nodes.Range(func(_, _ interface{}) bool {
+		length++
+		return true
+	})
+	return length
+}
+
+// AddNode adds a new node in the graph
+func (g *Graph) AddNode(index string, value interface{}) {
+	_, ok := g.Nodes.Load(index)
+	if !ok {
+		node := &GraphNode{ Value: value }
+		g.Nodes.Store(index, node)
+		return
+	}
+}
+
+// AddEdge adds a node to the
+func (g *Graph) AddEdge(n1Index, n2Index string) {
+	n1, ok := g.Nodes.Load(n1Index)
+	if ok && n1 == nil {
+		fmt.Println("Source node must exist")
+		return
+	}
+
+	// Keep track of the total number of edges adjacent to the GraphNode.  We use
+	// this value to randomly pick an edge with the same frequency the edge
+	// occours in the corpus.
+	graphNode := n1.(*GraphNode)
+	graphNode.TotalWeight += 1
+
+	for _, edge := range graphNode.Edges {
+		// if the edge already exists
+		if edge.Index == n2Index {
+			// Increment the weight (represents frequency)
+			edge.Weight += 1
+			return
+		}
+	}
+
+	// Otherwise, it doesn't exist, create the new edge
+	n2 := &EdgeNode{
+		Index:  n2Index,
+		Weight: 1,
+	}
+
+	// Insert the new edge
+	graphNode.Edges = append(graphNode.Edges, n2)
 }
 
 func (g *GraphNode) RandomEdge() *EdgeNode {
@@ -32,60 +96,6 @@ func (g *GraphNode) RandomEdge() *EdgeNode {
 	return nil
 }
 
-type EdgeNode struct {
-	Index  string
-	Weight int
-}
-
-func NewGraph() *Graph {
-	return &Graph{
-		Nodes: make(map[string]*GraphNode),
-	}
-}
-
-// AddNode adds a new node in the graph
-func (g *Graph) AddNode(index string, value interface{}) {
-	node := g.Nodes[index]
-	if node == nil {
-		node := &GraphNode{
-			Value: value,
-		}
-		g.Nodes[index] = node
-		return
-	}
-}
-
-// AddEdge adds a node to the
-func (g *Graph) AddEdge(n1Index, n2Index string) {
-	n1 := g.Nodes[n1Index]
-	if n1 == nil {
-		fmt.Println("Source node must exist")
-		return
-	}
-
-	// Keep track of the total number of edges adjacent to the GraphNode.  We use
-	// this value to randomly pick an edge with the same frequency the edge
-	// occours in the corpus.
-	n1.TotalWeight += 1
-
-	for _, edge := range n1.Edges {
-		// if the edge already exists
-		if edge.Index == n2Index {
-			// Increment the weight (represents frequency)
-			edge.Weight += 1
-			return
-		}
-	}
-
-	// Otherwise, it doesn't exist, create the new edge
-	n2 := &EdgeNode{
-		Index:  n2Index,
-		Weight: 1,
-	}
-
-	// Insert the new edge
-	g.Nodes[n1Index].Edges = append(g.Nodes[n1Index].Edges, n2)
-}
 
 type StopCase func(int, *GraphNode) bool
 
@@ -96,12 +106,15 @@ func (g *Graph) RandomWalk(startIndex string, fn StopCase) {
 
 func randomWalk(g *Graph, start string, count int, fn StopCase) {
 	count += 1
-	node := g.Nodes[start]
-	if fn(count, node) {
-		return
-	}
+	node, ok := g.Nodes.Load(start)
+	if ok {
+		graphNode := node.(*GraphNode)
+		if ok && fn(count, graphNode) {
+			return
+		}
 
-	randomWalk(g, node.RandomEdge().Index, count, fn)
+		randomWalk(g, graphNode.RandomEdge().Index, count, fn)
+	}
 }
 
 func (g *Graph) Print() {
