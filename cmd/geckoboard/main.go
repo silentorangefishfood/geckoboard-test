@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 
 	"github.com/silentorangefishfood/geckoboard-test/internal/api"
 	"github.com/silentorangefishfood/geckoboard-test/internal/middleware"

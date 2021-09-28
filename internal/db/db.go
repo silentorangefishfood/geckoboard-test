@@ -54,7 +54,7 @@ func (c *Corpus) Generate(maxLength int) ([]string, error) {
 	c.Trigrams.RandomWalk(start, func(nodeCount int, node *graph.GraphNode) bool {
 		bigram := node.Value.(Bigram)
 		strs = append(strs, bigram.Word1)
-		if len(node.Edges) == 0 ||
+		if node.TotalEdges() == 0 ||
 			(nodeCount >= maxLength &&
 				len(bigram.Word2) > 0 &&
 				bigram.Word2[len(bigram.Word2)-1:][0] == '.') {
@@ -69,7 +69,7 @@ func (c *Corpus) Generate(maxLength int) ([]string, error) {
 }
 
 func (c *Corpus) GetRandomKey() (string, error) {
-	if c.Trigrams.Size == 0 {
+	if c.Trigrams.GetSize() == 0 {
 		return "", errors.New("Empty corpus")
 	}
 	arr := []string{}

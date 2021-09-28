@@ -35,8 +35,8 @@ func TestGraph(t *testing.T) {
 			t.Errorf("Expected graphNode to contain value: %d", value)
 		}
 
-		if graphNode.TotalWeight != 0 {
-			t.Errorf("Expected weight of graphNode to equal 0: %d", graphNode.TotalWeight)
+		if graphNode.GetWeight() != 0 {
+			t.Errorf("Expected weight of graphNode to equal 0: %d", graphNode.GetWeight())
 		}
 	})
 
@@ -58,8 +58,8 @@ func TestGraph(t *testing.T) {
 			t.Errorf("Expected graphNode to contain value: %d", value)
 		}
 
-		if graphNode.TotalWeight != 0 {
-			t.Errorf("Expected weight of graphNode to equal 0: %d", graphNode.TotalWeight)
+		if graphNode.GetWeight() != 0 {
+			t.Errorf("Expected weight of graphNode to equal 0: %d", graphNode.GetWeight())
 		}
 	})
 
@@ -73,20 +73,20 @@ func TestGraph(t *testing.T) {
 		}
 
 		graphNode := srcNode.(*GraphNode)
-		if graphNode.TotalWeight != 1 {
-			t.Errorf("Expected src node to have weight of 1: %d", graphNode.TotalWeight)
+		if graphNode.GetWeight() != 1 {
+			t.Errorf("Expected src node to have weight of 1: %d", graphNode.GetWeight())
 		}
 
-		if len(graphNode.Edges) != 1 {
-			t.Errorf("Expected src node to have 1 edge: %d", len(graphNode.Edges))
+		if graphNode.TotalEdges() != 1 {
+			t.Errorf("Expected src node to have 1 edge: %d", graphNode.TotalEdges())
 		}
 
 		edgesTotal := 0
-		for _, e := range graphNode.Edges {
-			edgesTotal += e.Weight
+		for _, e := range graphNode.edges {
+			edgesTotal += e.weight
 		}
 
-		if graphNode.TotalWeight != edgesTotal {
+		if graphNode.GetWeight() != edgesTotal {
 			t.Errorf("Expected src node total weight to equal sum of edge weights: %d", edgesTotal)
 		}
 	})
@@ -109,8 +109,8 @@ func TestGraph(t *testing.T) {
 			t.Errorf("Expected graphNode to contain value: %d", value)
 		}
 
-		if graphNode.TotalWeight != 0 {
-			t.Errorf("Expected weight of graphNode to equal 0: %d", graphNode.TotalWeight)
+		if graphNode.GetWeight() != 0 {
+			t.Errorf("Expected weight of graphNode to equal 0: %d", graphNode.GetWeight())
 		}
 	})
 }

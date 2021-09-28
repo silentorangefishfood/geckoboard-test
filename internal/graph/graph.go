@@ -9,18 +9,46 @@ import (
 
 type Graph struct {
 	Nodes sync.Map
-	Size int
+
+	mu   sync.RWMutex
+	size int
+}
+
+func (g *Graph) GetSize() int {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+	return g.size
+}
+
+func (g *Graph) IncrementSize(inc int) {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	g.size += inc
 }
 
 type GraphNode struct {
-	Value       interface{}
-	TotalWeight int
-	Edges       []*EdgeNode
+	mu     sync.RWMutex
+	Value  interface{}
+	weight int
+	edges  []*EdgeNode
 }
 
-type EdgeNode struct {
-	Index  string
-	Weight int
+func (n *GraphNode) GetWeight() int {
+	n.mu.RLock()
+	defer n.mu.RUnlock()
+	return n.weight
+}
+
+func (n *GraphNode) IncrementWeight(inc int) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	n.weight += inc
+}
+
+func (n *GraphNode) TotalEdges() int {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	return len(n.edges)
 }
 
 func NewGraph() *Graph {
@@ -29,21 +57,48 @@ func NewGraph() *Graph {
 	}
 }
 
+type EdgeNode struct {
+	Index string
+
+	mu     sync.RWMutex
+	weight int
+}
+
+func newEdgeNode(index string) *EdgeNode {
+	return &EdgeNode{
+		Index:  index,
+		weight: 1,
+	}
+}
+
+func (e *EdgeNode) GetWeight() int {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+	return e.weight
+}
+
+func (e *EdgeNode) IncrementWeight(inc int) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.weight += inc
+}
+
 // AddNode adds a new node in the graph
 func (g *Graph) AddNode(index string, value interface{}) {
 	_, ok := g.Nodes.Load(index)
 	if !ok {
-		node := &GraphNode{ Value: value }
+		node := &GraphNode{Value: value}
 		g.Nodes.Store(index, node)
-		g.Size++
+		g.IncrementSize(1)
 		return
 	}
 }
 
-// AddEdge adds a node to the
+// AddEdge adds an edge between two existing nodes in the graph
 func (g *Graph) AddEdge(n1Index, n2Index string) {
+	// Check if the source node exists
 	n1, ok := g.Nodes.Load(n1Index)
-	if ok && n1 == nil {
+	if !ok {
 		fmt.Println("Source node must exist")
 		return
 	}
@@ -52,35 +107,36 @@ func (g *Graph) AddEdge(n1Index, n2Index string) {
 	// this value to randomly pick an edge with the same frequency the edge
 	// occours in the corpus.
 	graphNode := n1.(*GraphNode)
-	graphNode.TotalWeight += 1
+	graphNode.IncrementWeight(1)
 
-	for _, edge := range graphNode.Edges {
+	// Check if the edge already exists
+	graphNode.mu.RLock()
+	defer graphNode.mu.RUnlock()
+	for _, edge := range graphNode.edges {
 		// if the edge already exists
 		if edge.Index == n2Index {
 			// Increment the weight (represents frequency)
-			edge.Weight += 1
+			edge.IncrementWeight(1)
 			return
 		}
 	}
 
 	// Otherwise, it doesn't exist, create the new edge
-	n2 := &EdgeNode{
-		Index:  n2Index,
-		Weight: 1,
-	}
+	n2 := newEdgeNode(n2Index)
 
 	// Insert the new edge
-	graphNode.Edges = append(graphNode.Edges, n2)
+	graphNode.edges = append(graphNode.edges, n2)
 }
 
 func (g *GraphNode) RandomEdge() *EdgeNode {
-	stoppingPoint := rand.Intn(g.TotalWeight) + 1
-	fmt.Printf("Stopping point: %d\n", stoppingPoint)
+	stoppingPoint := rand.Intn(g.GetWeight()) + 1
 	count := 0
-	for _, edge := range g.Edges {
-		count += edge.Weight
+
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+	for _, edge := range g.edges {
+		count += edge.GetWeight()
 		if count >= stoppingPoint {
-			fmt.Printf("Reached stopping point, count: %d\n", count)
 			return edge
 		}
 	}
@@ -88,7 +144,6 @@ func (g *GraphNode) RandomEdge() *EdgeNode {
 	// We should never reach here
 	return nil
 }
-
 
 type StopCase func(int, *GraphNode) bool
 
