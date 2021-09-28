@@ -9,6 +9,7 @@ import (
 
 type Graph struct {
 	Nodes sync.Map
+	Size int
 }
 
 type GraphNode struct {
@@ -28,21 +29,13 @@ func NewGraph() *Graph {
 	}
 }
 
-func (g *Graph) Size() int {
-	length := 0
-	g.Nodes.Range(func(_, _ interface{}) bool {
-		length++
-		return true
-	})
-	return length
-}
-
 // AddNode adds a new node in the graph
 func (g *Graph) AddNode(index string, value interface{}) {
 	_, ok := g.Nodes.Load(index)
 	if !ok {
 		node := &GraphNode{ Value: value }
 		g.Nodes.Store(index, node)
+		g.Size++
 		return
 	}
 }

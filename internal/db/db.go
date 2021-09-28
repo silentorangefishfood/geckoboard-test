@@ -69,7 +69,7 @@ func (c *Corpus) Generate(maxLength int) ([]string, error) {
 }
 
 func (c *Corpus) GetRandomKey() (string, error) {
-	if c.Trigrams.Size() == 0 {
+	if c.Trigrams.Size == 0 {
 		return "", errors.New("Empty corpus")
 	}
 	arr := []string{}
