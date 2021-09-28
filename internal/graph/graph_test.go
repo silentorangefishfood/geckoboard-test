@@ -29,14 +29,14 @@ func TestGraph(t *testing.T) {
 			t.Errorf("Expected graph to contain node: %s", index)
 		}
 
-		graphNode := node.(*GraphNode)
+		graphNode := node.(*Node)
 		value := graphNode.Value.(TestVal).Int
 		if value != 1 {
 			t.Errorf("Expected graphNode to contain value: %d", value)
 		}
 
-		if graphNode.GetWeight() != 0 {
-			t.Errorf("Expected weight of graphNode to equal 0: %d", graphNode.GetWeight())
+		if graphNode.getTotalWeight() != 0 {
+			t.Errorf("Expected weight of graphNode to equal 0: %d", graphNode.getTotalWeight())
 		}
 	})
 
@@ -52,14 +52,14 @@ func TestGraph(t *testing.T) {
 			t.Errorf("Expected graph to contain node: %s", index)
 		}
 
-		graphNode := node.(*GraphNode)
+		graphNode := node.(*Node)
 		value := graphNode.Value.(TestVal).Int
 		if value != 2 {
 			t.Errorf("Expected graphNode to contain value: %d", value)
 		}
 
-		if graphNode.GetWeight() != 0 {
-			t.Errorf("Expected weight of graphNode to equal 0: %d", graphNode.GetWeight())
+		if graphNode.getTotalWeight() != 0 {
+			t.Errorf("Expected weight of graphNode to equal 0: %d", graphNode.getTotalWeight())
 		}
 	})
 
@@ -72,9 +72,9 @@ func TestGraph(t *testing.T) {
 			t.Errorf("Failed to load node")
 		}
 
-		graphNode := srcNode.(*GraphNode)
-		if graphNode.GetWeight() != 1 {
-			t.Errorf("Expected src node to have weight of 1: %d", graphNode.GetWeight())
+		graphNode := srcNode.(*Node)
+		if graphNode.getTotalWeight() != 1 {
+			t.Errorf("Expected src node to have weight of 1: %d", graphNode.getTotalWeight())
 		}
 
 		if graphNode.TotalEdges() != 1 {
@@ -86,7 +86,7 @@ func TestGraph(t *testing.T) {
 			edgesTotal += e.weight
 		}
 
-		if graphNode.GetWeight() != edgesTotal {
+		if graphNode.getTotalWeight() != edgesTotal {
 			t.Errorf("Expected src node total weight to equal sum of edge weights: %d", edgesTotal)
 		}
 	})
@@ -103,14 +103,14 @@ func TestGraph(t *testing.T) {
 			t.Errorf("Expected graph to contain node: %s", index)
 		}
 
-		graphNode := node.(*GraphNode)
+		graphNode := node.(*Node)
 		value := graphNode.Value.(TestVal).Int
 		if value != 3 {
 			t.Errorf("Expected graphNode to contain value: %d", value)
 		}
 
-		if graphNode.GetWeight() != 0 {
-			t.Errorf("Expected weight of graphNode to equal 0: %d", graphNode.GetWeight())
+		if graphNode.getTotalWeight() != 0 {
+			t.Errorf("Expected weight of graphNode to equal 0: %d", graphNode.getTotalWeight())
 		}
 	})
 }

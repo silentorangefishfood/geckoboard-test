@@ -2,6 +2,8 @@ package middleware
 
 import "net/http"
 
+// Post is a middleware function, that restricts the caller to using the POST
+// HTTP verb, and enforces a content-type of "text-plain"
 func Post(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -19,6 +21,8 @@ func Post(h http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
+// Get is a middleware function, that restricts the caller to using the GET
+// HTTP verb.
 func Get(h http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
